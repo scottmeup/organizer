@@ -1,0 +1,6 @@
+http:
+  middlewares:
+    secure-headers:
+      headers:
+        customRequestHeaders:
+          X-Forwarded-Proto: http

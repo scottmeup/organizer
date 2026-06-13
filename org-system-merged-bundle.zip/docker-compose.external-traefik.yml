@@ -1,0 +1,73 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-orgsys}
+      POSTGRES_USER: ${POSTGRES_USER:-orgsys}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks: [internal]
+
+  org-core:
+    build: { context: ./services/org-core }
+    env_file: [./.env, ./env-templates/providers.env, ./services/org-core/.env.example]
+    environment:
+      PORT: ${ORG_CORE_PORT:-8080}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-orgsys}:${POSTGRES_PASSWORD:-change_me}@postgres:5432/${POSTGRES_DB:-orgsys}
+    depends_on: [postgres]
+    networks: [internal, proxy]
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_DOCKER_NETWORK}
+      - traefik.http.routers.org-core.rule=Host(`${ORGSYS_DOMAIN}`) && PathPrefix(`/api`)
+      - traefik.http.services.org-core.loadbalancer.server.port=${ORG_CORE_PORT:-8080}
+
+  config-ui:
+    build: { context: ./services/config-ui }
+    env_file: [./.env, ./services/config-ui/.env.example]
+    environment:
+      PORT: ${CONFIG_UI_PORT:-3000}
+      ORG_CORE_BASE_URL: http://org-core:${ORG_CORE_PORT:-8080}
+    depends_on: [org-core]
+    networks: [internal, proxy]
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_DOCKER_NETWORK}
+      - traefik.http.routers.config-ui.rule=Host(`${ORGSYS_DOMAIN}`) && PathPrefix(`/ui`)
+      - traefik.http.services.config-ui.loadbalancer.server.port=${CONFIG_UI_PORT:-3000}
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    env_file: [./.env]
+    environment:
+      N8N_HOST: ${N8N_HOST:-n8n.localhost}
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-http}
+      N8N_PORT: ${N8N_PORT:-5678}
+      N8N_EDITOR_BASE_URL: ${N8N_EDITOR_BASE_URL:-http://localhost:5678}
+      WEBHOOK_URL: ${N8N_WEBHOOK_URL:-https://andrewjscott.net}
+      N8N_PROXY_HOPS: ${N8N_PROXY_HOPS:-1}
+    networks: [internal, proxy]
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_DOCKER_NETWORK}
+      - traefik.http.routers.n8n.rule=Host(`${ORGSYS_DOMAIN}`) && (PathPrefix(`/webhook`) || PathPrefix(`/webhook-test`) || PathPrefix(`/form`) || PathPrefix(`/n8n`))
+      - traefik.http.services.n8n.loadbalancer.server.port=${N8N_PORT:-5678}
+
+  eink-client:
+    build: { context: ./services/eink-client }
+    env_file: [./.env, ./env-templates/providers.env, ./services/eink-client/.env.example]
+    environment:
+      PORT: ${EINK_CLIENT_PORT:-8090}
+      ORG_CORE_BASE_URL: http://org-core:${ORG_CORE_PORT:-8080}
+    depends_on: [org-core]
+    networks: [internal]
+
+networks:
+  proxy:
+    external: true
+    name: ${EXISTING_TRAEFIK_NETWORK}
+  internal:
+
+volumes:
+  postgres_data:

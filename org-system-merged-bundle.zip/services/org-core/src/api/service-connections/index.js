@@ -1,0 +1,5 @@
+import * as repo from '../../db/repositories/entities/service-connections.js';
+import { parseJson } from '../../utils/map-row.js';
+export async function listServiceConnections() { return (await repo.listRows()).map((row) => ({ id: row.id, providerId: row.provider_id, providerType: row.provider_type, enabled: row.enabled, config: parseJson(row.config), createdAt: row.created_at, updatedAt: row.updated_at })); }
+export async function createServiceConnection(input) { const row = await repo.insertRow(input); return { id: row.id, providerId: row.provider_id, providerType: row.provider_type, enabled: row.enabled, config: parseJson(row.config), createdAt: row.created_at, updatedAt: row.updated_at }; }
+export async function updateServiceConnection(id, input) { const row = await repo.updateRow(id, input); return row ? { id: row.id, providerId: row.provider_id, providerType: row.provider_type, enabled: row.enabled, config: parseJson(row.config), createdAt: row.created_at, updatedAt: row.updated_at } : null; }

@@ -1,0 +1,11 @@
+.env
+**/.env
+**/node_modules
+**/dist
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.DS_Store
+infra/node-red/data/flows_cred.json
+*.log
+*.sqlite

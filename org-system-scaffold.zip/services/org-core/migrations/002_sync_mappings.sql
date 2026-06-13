@@ -1,0 +1,1 @@
+create table if not exists sync_mappings (id uuid primary key default gen_random_uuid(), canonical_type text not null, canonical_id text not null, provider_id text not null, remote_id text not null, created_at timestamptz not null default now());

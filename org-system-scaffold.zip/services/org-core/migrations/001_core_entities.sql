@@ -1,0 +1,1 @@
+create table if not exists service_connections (id uuid primary key default gen_random_uuid(), provider_id text not null, provider_type text not null, enabled boolean not null default false, created_at timestamptz not null default now());

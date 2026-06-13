@@ -1,0 +1,145 @@
+services:
+  traefik:
+    image: traefik:v3.1
+    command:
+      - --configFile=/etc/traefik/static/traefik.yml
+    ports:
+      - ${TRAEFIK_HTTP_PORT:-80}:80
+      - ${TRAEFIK_HTTPS_PORT:-443}:443
+    volumes:
+      - ./infra/traefik/static:/etc/traefik/static:ro
+      - ./infra/traefik/dynamic:/etc/traefik/dynamic:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - edge
+      - internal
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-orgsys}
+      POSTGRES_USER: ${POSTGRES_USER:-orgsys}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+      TZ: ${TZ:-Australia/Melbourne}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+    restart: unless-stopped
+
+  org-core:
+    build:
+      context: ./services/org-core
+    env_file:
+      - ./.env
+      - ./env-templates/providers.env
+      - ./services/org-core/.env.example
+    environment:
+      PORT: ${ORG_CORE_PORT:-8080}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-orgsys}:${POSTGRES_PASSWORD:-change_me}@postgres:5432/${POSTGRES_DB:-orgsys}
+    depends_on:
+      - postgres
+    networks:
+      - internal
+      - edge
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.org-core.rule=Host(`${ORGSYS_DOMAIN}`) && PathPrefix(`/api`)
+      - traefik.http.routers.org-core.entrypoints=web
+      - traefik.http.services.org-core.loadbalancer.server.port=${ORG_CORE_PORT:-8080}
+    restart: unless-stopped
+
+  config-ui:
+    build:
+      context: ./services/config-ui
+    env_file:
+      - ./.env
+      - ./services/config-ui/.env.example
+    environment:
+      PORT: ${CONFIG_UI_PORT:-3000}
+      ORG_CORE_BASE_URL: http://org-core:${ORG_CORE_PORT:-8080}
+    depends_on:
+      - org-core
+    networks:
+      - internal
+      - edge
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.config-ui.rule=Host(`${ORGSYS_DOMAIN}`) && PathPrefix(`/ui`)
+      - traefik.http.routers.config-ui.entrypoints=web
+      - traefik.http.services.config-ui.loadbalancer.server.port=${CONFIG_UI_PORT:-3000}
+    restart: unless-stopped
+
+  eink-client:
+    build:
+      context: ./services/eink-client
+    env_file:
+      - ./.env
+      - ./env-templates/providers.env
+      - ./services/eink-client/.env.example
+    environment:
+      PORT: ${EINK_CLIENT_PORT:-8090}
+      ORG_CORE_BASE_URL: http://org-core:${ORG_CORE_PORT:-8080}
+    depends_on:
+      - org-core
+    networks:
+      - internal
+      - edge
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.eink-client.rule=Host(`${ORGSYS_DOMAIN}`) && PathPrefix(`/display`)
+      - traefik.http.routers.eink-client.entrypoints=web
+      - traefik.http.services.eink-client.loadbalancer.server.port=${EINK_CLIENT_PORT:-8090}
+    restart: unless-stopped
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    env_file:
+      - ./.env
+    environment:
+      N8N_HOST: ${N8N_HOST:-n8n.localhost}
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-http}
+      N8N_PORT: ${N8N_PORT:-5678}
+      N8N_EDITOR_BASE_URL: ${N8N_EDITOR_BASE_URL:-http://localhost:5678}
+      WEBHOOK_URL: ${N8N_WEBHOOK_URL:-https://andrewjscott.net}
+      N8N_PROXY_HOPS: ${N8N_PROXY_HOPS:-1}
+      TZ: ${TZ:-Australia/Melbourne}
+    volumes:
+      - ./n8n/workflows:/data/workflows
+    networks:
+      - internal
+      - edge
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.n8n-webhooks.rule=Host(`${ORGSYS_DOMAIN}`) && (PathPrefix(`/webhook`) || PathPrefix(`/webhook-test`) || PathPrefix(`/form`))
+      - traefik.http.routers.n8n-webhooks.entrypoints=web
+      - traefik.http.services.n8n.loadbalancer.server.port=${N8N_PORT:-5678}
+    restart: unless-stopped
+
+  home-assistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    environment:
+      TZ: ${TZ:-Australia/Melbourne}
+    volumes:
+      - ./infra/home-assistant/config:/config
+    networks:
+      - internal
+    restart: unless-stopped
+
+  node-red:
+    image: nodered/node-red:latest
+    profiles:
+      - nodered
+    ports:
+      - 1880:1880
+    networks:
+      - internal
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  edge:
+  internal:

@@ -1,0 +1,9 @@
+[orgsys]
+kind: calendar_event
+schedule:
+  repeat:
+    mode: fixed
+    freq: weekly
+    interval: 1
+  time: "09:00"
+[/orgsys]

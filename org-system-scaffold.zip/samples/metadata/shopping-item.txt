@@ -1,0 +1,5 @@
+[orgsys]
+kind: shopping_item
+reports:
+  include: false
+[/orgsys]

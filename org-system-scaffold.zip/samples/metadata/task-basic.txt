@@ -1,0 +1,6 @@
+[orgsys]
+kind: task
+schedule:
+  type: once
+  time: "09:00"
+[/orgsys]

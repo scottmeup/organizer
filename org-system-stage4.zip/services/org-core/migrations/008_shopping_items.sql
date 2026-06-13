@@ -1,0 +1,1 @@
+create table if not exists shopping_items (id uuid primary key default gen_random_uuid(), title text not null, quantity integer not null default 1, checked boolean not null default false, created_at timestamptz not null default now(), updated_at timestamptz not null default now());

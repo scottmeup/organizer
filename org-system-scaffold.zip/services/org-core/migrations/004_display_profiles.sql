@@ -1,0 +1,1 @@
+create table if not exists display_profiles (id uuid primary key default gen_random_uuid(), profile_name text not null, config jsonb not null default "{}"::jsonb, created_at timestamptz not null default now());

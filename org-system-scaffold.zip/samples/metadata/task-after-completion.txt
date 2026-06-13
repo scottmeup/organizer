@@ -1,0 +1,8 @@
+[orgsys]
+kind: task
+schedule:
+  repeat:
+    mode: after_completion
+    freq: weekly
+    interval: 1
+[/orgsys]

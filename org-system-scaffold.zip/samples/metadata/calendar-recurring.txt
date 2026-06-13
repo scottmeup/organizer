@@ -1,0 +1,9 @@
+[orgsys]
+kind: calendar_event
+schedule:
+  repeat:
+    mode: fixed
+    freq: monthly
+    interval: 1
+    bymonthday: [15]
+[/orgsys]

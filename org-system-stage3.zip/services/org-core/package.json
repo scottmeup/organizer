@@ -1,0 +1,15 @@
+{
+  "name": "org-core",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/app/server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "js-yaml": "^4.1.0",
+    "pg": "^8.13.1",
+    "zod": "^3.25.67"
+  }
+}

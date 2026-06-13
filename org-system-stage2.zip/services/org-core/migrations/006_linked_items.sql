@@ -1,0 +1,1 @@
+create table if not exists linked_items (id uuid primary key default gen_random_uuid(), left_type text not null, left_id text not null, right_type text not null, right_id text not null, link_mode text not null default 'two_way', created_at timestamptz not null default now());

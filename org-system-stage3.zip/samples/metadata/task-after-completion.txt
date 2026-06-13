@@ -1,0 +1,11 @@
+[orgsys]
+kind: task
+schedule:
+  repeat:
+    mode: after_completion
+    freq: monthly
+    interval: 1
+reminders:
+  notify_before:
+    - "2h"
+[/orgsys]

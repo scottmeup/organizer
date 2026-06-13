@@ -1,0 +1,11 @@
+import { getPool } from '../client.js';
+export async function listReminderRuleRows() { return (await getPool().query('select * from reminder_rules order by created_at desc')).rows; }
+export async function getReminderRuleRow(id) { return (await getPool().query('select * from reminder_rules where id = $1', [id])).rows[0] || null; }
+export async function insertReminderRuleRow(input) { return (await getPool().query('insert into reminder_rules(owner_type, owner_id, config) values ($1,$2,$3) returning *', [input.ownerType || 'task', input.ownerId || 'unknown', JSON.stringify(input.config || {})])).rows[0]; }
+export async function updateReminderRuleRow(id, input) {
+  const existing = await getReminderRuleRow(id);
+  if (!existing) return null;
+  const config = input.config || (typeof existing.config === 'string' ? JSON.parse(existing.config || '{}') : existing.config);
+  return (await getPool().query('update reminder_rules set owner_type=$2, owner_id=$3, config=$4, updated_at=now() where id=$1 returning *', [id, input.ownerType || existing.owner_type, input.ownerId || existing.owner_id, JSON.stringify(config)])).rows[0];
+}
+export async function deleteReminderRuleRow(id) { return (await getPool().query('delete from reminder_rules where id = $1', [id])).rowCount > 0; }

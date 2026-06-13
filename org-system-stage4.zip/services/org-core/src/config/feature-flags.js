@@ -1,0 +1,1 @@
+export function getFeatureFlags() { return { webConfigEnabled: String(process.env.ALLOW_WEB_CONFIG || 'false') === 'true', keepAdapterEnabled: String(process.env.FEATURE_GOOGLE_KEEP || 'true') === 'true', alexaExperimentalEnabled: String(process.env.FEATURE_ALEXA_EXPERIMENTAL || 'true') === 'true' }; }
