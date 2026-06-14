@@ -1,0 +1,149 @@
+v1
+
+Structure
+I’m using hierarchical item listing in this comment with the following layout:
+Top level: Description / section heading text
+2nd level: lowercase roman numerals followed by a full stop eg “iv.”
+3rd level: lowercase english alphabet followed by a closing bracket, eg. “c)”
+Do not use this layout in replies.
+
+Overview
+I want to make an organization system that integrates n8n, google assistant / gemini, amazon alexa, google calendar, google tasks. 
+
+I'm thinking about integration with bring ( https://web.getbring.com/) and if it would be useful to meet the goals, home assistant, and nodered.
+
+I would like to make the system work with a raspberry pi or similar device, and an e-ink display eg. Inky Impression 
+
+The system should be modular so services can be added, removed, changed. Perhaps some level of abstraction in the architecture would help with that requirement.
+
+The system should be user friendly.
+
+I’d prefer it if the system didn’t need to run a script or a binary to run the main program: I’d like it to run from n8n, but I’m open to discussion on that point depending on what’s realistic and the complexity involved. A docker based solution is one alternative if this isn’t something that n8n is well suited to handling on its own.
+
+I have a domain that I can use for webhooks: andrewjscott.net
+
+Inputs
+I’d like to be able to input into the system from:
+i. google nest devices - voice commands (various functions including adding items to shopping list via google keep list)
+ii. amazon echo devices - voice commands (various functions), presence detection
+iii. google calendar - calendars. must be able to input from multiple calendars
+iv. google tasks - to do lists. must be able to input from multiple lists
+v. bring - shopping list
+vi. barcode scanning app - shopping list (I might try to repurpose an old phone for this)
+
+Outputs
+I’d like to output from the system to:
+i. google nest devices - audio output
+ii. amazon echo devices - audio output
+iii. google calendar - calendar
+iv. google tasks - do to items
+v. bring - shopping list
+vi. an e-ink based display powered by something like a raspberry pi zero 2 w, rasbperry pi pico, similar low power low cost devices - configurable display options eg. calendar, to-do list. layout and items to display must be configurable by the user. The device should be self-reliant in as much as I don’t want a separate device that I have to administer generating image files or fetching data from other services for it to display, the low power board should handle that sort of thing itself once it has been configured.
+One option for display software that sounds close to meeting the requirement is magicmirror.
+vii. Google keep - shopping list
+
+Integration
+i. There needs to be a configurable way to enable / disable features for each service that has been added: i’m thinking something along the lines of a configuration web page with “use this service for {function name}” with a checkbox next to each service that provides that kind of function, eg. if google, bring, amazon are all connected to the system there should be a user friendly way to choose if each of them should be synchronized with the shopping list of the others.
+
+ii. I want to be able to add items to my applicable services from echo devices, nest devices, bring, google tasks, google calendar. 
+eg. if I say “alexa, add bananas to the shopping list” or “ok google, add bananas to the shopping list” or if I add bananas to a shopping list in bring, bananas (or whatever I add) should appear on all of those services that are enabled in the system for shopping lists.
+
+iii. If an item is removed from one service it should be removed from the the other services that are enabled for that function.
+
+iv. Statuses should be also be synchronized across services, eg. a task marked as completed in one of the enabled task services should result in the same task being marked as completed in all enabled task services
+
+v. For deletions and modifications there should be a way for the user to undo the deletion or modification.
+
+vi. timestamped logs should be kept of additions, removals, changes, and include the origin and the destination services. 
+Allow the user to specify log file location, max log size.
+
+vii. Webhooks should be exposed through a reverse proxy in a secure way that exposes only the webhook.
+Note: do not take this as an instruction to block existing configurations of the reverse proxy from passing traffic. What I want is to not expose any more of the server than is necessary to allow this system to work securely.
+For the purposes of this project I am using traefik.
+
+viii. There are a few ways to get data from Amazon alexa without using amazon’s APIs that aren’t against their TOS or anything like that, eg. https://github.com/TheSethRose/Alexa-Shopping-List , https://pastebin.com/2kcxtLUG , node red:
+
+To-do / reminders
+i. Reminders / tasks should be configurable to re-remind at a certain frequency until the task is marked as completed or to only remind once.
+
+ii. Reminders / tasks should be configurable to repeat at a certain frequency or to occur only once. 
+This is how often the actual to-do item repeats.
+eg. “do the laundry” might have a repeat frequency of 1 week. The task could be completed on one week and there would be a new task called “do the laundry” on the same day next week etc.
+
+iii. Repeat frequencies should be able to be specified in minutes, hours, days, weeks, months.
+a) It should allow configurations of multiple types of those time intervals where it makes sense: a larger interval may or may not have specifics involving a smaller interval but not the other way around.
+This should cover a wide range of user selectable options including but not limited to:
+- Every year on {select which months}, {select from complex month behaviour}
+- Every {n} months
+- Every {nth} month on the {1st, 2nd, 3rd, 4th} {select from one or more of monday, tuesday, wednesday, thursday, friday, saturday, sunday}
+- Every {nth} month on the {day of month 1-31}
+- Every {n} weeks
+- Every {n} weeks on {select from one or more of monday, tuesday, wednesday, thursday, friday, saturday, sunday}
+- Every {n} days
+- Multiple times per day at {select times of day in hours and minutes eg. 10:00, 14:00, 18:30}
+- Every {n} hours on the {nth} minute
+- Every {n} minutes
+- For intervals that are 1 day or longer, the user must specify what time of day the next event should occur at.
+b) For repeating tasks / to do items, there should be an option to 
+1) repeat the task on the given interval (eg. a task with a 1 week repeat interval that is scheduled for a Monday would repeat every week on the Monday), OR 
+2) repeat at the given interval AFTER LAST COMPLETION (eg. a task with a 1 week repeat interval that is scheduled for Monday but isn’t completed until Wednesday would next be scheduled for the following Wednesday. If I run late doing certain tasks (eg. 3 weeks late getting a haircut scheduled for once a moth) it doesn’t make sense to get another haircut 1 week later. 
+c) Repeating items on a sliding schedule as mentioned in iii.b.2 should respect the time of day configuration if their repeat interval is one day or longer. 
+Go by calendar days, no need to use the time of day for completion in calculating the schedule for the next task if the repeat period is 1 day or longer.
+d) There should be configurable options for repeating tasks / to do items for how long the repetition should go for (eg. forever, for {n} times, for {n} minutes, for {n} hours, for {days}, for {weeks}, for {n} months, until {time and date})
+
+iv. Reminders / tasks should be configurable to create an associated calendar item if the user decides they want one
+
+Calendar
+i. Calendar entries should be able to be configured with the same repetition options as “To-do / reminders” points ii. and iii.
+
+ii. Calendar entries should have configurable notification times where the user is notified about an upcoming calendar event before it occurs.
+The user should be able to chose the notification time before an event by selecting the amount of minutes, hours, days, weeks, months, or any combination of those.
+The user should be able to configure as many calendar notifications as desired. 
+
+iii. Calendar entries should be configurable to create an associated reminder / task item if the user decides they want one
+
+Reports
+i. There should be a way to configure a daily report with digital assistants like amazon alexa, google assistant (or google gemini, which is in the process of replacing google assistant) 
+The user should be able to specify which devices output the report (one or multiple at the same time) and any fallback devices to use in case the preferred device is unavailable.
+
+ii. The user should be able to configure the time of day that a report is provided
+
+iii. The user should be able to configure multiple reports, each with different configuration options
+
+iii. The reports should be configurable so that the user can get the upcoming schedule for a single day (eg. today, tomorrow, any day in the future eg. 2 week from now, etc.) or for a range of days (eg. in the next week for everything scheduled in the next 7 days).
+Reports should take into account the time of day when deciding what is coming up: if the report is given to the user at 19:00, it shouldn’t include things that were scheduled for 06:00 of the same day but if the report is given to the user at 05:00 then it should include things that are scheduled for 07:30 of the same day.
+
+iv. The user should be able to configure what is in the report and the order of the report sections. The options to include should be calendar entries (allow the user to configure which calendars, allow single or multiple calendars) in chronological order, to do / reminder entries (allow the user to configure which to-do lists and allow single or multiple to-do lists to be used)
+
+iii. I’d like the option to use presence sensing and attempt to deliver a report any time after the scheduled report time occurs and a presence is detected. Allow configuration to give up waiting for a presence if a configured time of day is reached after the scheduled report. Allow configuration of the give up behaviour to either give the report even if no presence is detected or to not deliver that report at all if the failure time of day is reached. 
+Presence sensing should not be mandatory.
+I have an amazon echo dot with presence sensing that I’d like to use for this but I’d like the ability for it to work with other presence sensors.
+
+Configuration
+i. the services setup and configuration should be configurable through a web page as well as a .env file for things involving integration (urls, api keys, names of things like calendar names & list names, other back-end configuration options)
+
+ii. Actual items in the system eg. tasks/reminders, calendar events, shopping list items should be configured primarily via the integrated services themselves: there should not be calendar entries, shopping items, tasks etc. in a .env file.
+I’m still unsure what the best way to configure complex behaviours like repeating events is: one option would be an editable template added to tasks and / or calendar events where behaviour can be entered via text. 
+Feel free to make some suggestions about how it could be done, bonus points if the configuration can be inputted completely within one of the services (eg. google calendar: description text template for the repetition pattern).
+It might be good to have an additional input / editing method available, I don’t know if there’s a way n8n could host a web page to do this. 
+Maybe a small alpine docker with a simple web host and / or sql would work if n8n is not suited to hosting a web page.
+
+
+Next step
+I’d like to discuss the things I mentioned I was still considering or aren’t sure about and finalize the design spec.
+
+Deliverables
+Once the design spec is finalized:
+i. Provide a downloadable document of the full design spec
+
+ii. You must deliver a consolidated code-complete prototype bundle with
+all working files to make the system function, as well as instructions for integrating the different services. 
+Integration testing can follow when the prototype code has been provided.
+.env files should contain comments for usage, code should not.
+
+iii. Unless there are questions you feel that are seriously blocking your interpretation, understanding, and ability to complete this project:
+Start with a full working prototype that we can iterate over as issues are discovered.
+Don’t start with a “well here’s 1/3rd of the features you asked for and let’s call it version 0” approach.
+If you do have questions that you feel are important with regards to the current design spec and your understanding or implementation, you should ask before submitting deliverables.
+
+iv. Prototyping of the e-ink display system is probably going to be done on a PC so that must be accommodated for. VMs, dockers, docker compose, emulation are all options if they provide a close enough analogue to the deployment environment.
