@@ -1,0 +1,6 @@
+import { getPool } from '../client.js';
+export async function listRows() { return (await getPool().query('select * from reminder_rules order by created_at desc')).rows; }
+export async function getRow(id) { return (await getPool().query('select * from reminder_rules where id = $1', [id])).rows[0] || null; }
+export async function insertRow(input) { return (await getPool().query('insert into reminder_rules(owner_type,owner_id,config) values ($1,$2,$3) returning *', [input.ownerType || 'task', input.ownerId || 'unknown', JSON.stringify(input.config || {})])).rows[0]; }
+export async function updateRow(id, input) { const existing = await getRow(id); if (!existing) return null; const config = input.config || (typeof existing.config === 'string' ? JSON.parse(existing.config || '{}') : existing.config); return (await getPool().query('update reminder_rules set owner_type=$2,owner_id=$3,config=$4,updated_at=now() where id=$1 returning *', [id, input.ownerType || existing.owner_type, input.ownerId || existing.owner_id, JSON.stringify(config)])).rows[0]; }
+export async function deleteRow(id) { return (await getPool().query('delete from reminder_rules where id = $1', [id])).rowCount > 0; }

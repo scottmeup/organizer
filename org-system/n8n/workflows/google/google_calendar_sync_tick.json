@@ -1,0 +1,55 @@
+{
+  "name": "google_calendar_sync_tick",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "Schedule",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://org-core:8080/api/sync/run/google-calendar",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"mode\":\"poll\"}"
+      },
+      "id": "Sync",
+      "name": "Run google-calendar sync",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        520,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Run google-calendar sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

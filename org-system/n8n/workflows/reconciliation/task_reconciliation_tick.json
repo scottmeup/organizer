@@ -1,0 +1,80 @@
+{
+  "name": "task_reconciliation_tick",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "Schedule",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://org-core:8080/api/sync/run/google/all",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"mode\":\"poll\"}"
+      },
+      "id": "SyncAll",
+      "name": "Run Google sync batch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://org-core:8080/api/sync/mappings"
+      },
+      "id": "Mappings",
+      "name": "Load sync mappings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        740,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Run Google sync batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Google sync batch": {
+      "main": [
+        [
+          {
+            "node": "Load sync mappings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

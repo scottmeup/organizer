@@ -1,0 +1,8 @@
+{
+  "provider": "bring",
+  "sample": true,
+  "payload": {
+    "title": "bring sample",
+    "status": "open"
+  }
+}

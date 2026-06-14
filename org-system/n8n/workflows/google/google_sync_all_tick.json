@@ -1,0 +1,55 @@
+{
+  "name": "google_sync_all_tick",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "Schedule",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://org-core:8080/api/sync/run/google/all",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"mode\":\"poll\"}"
+      },
+      "id": "SyncAll",
+      "name": "Run Google sync batch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        520,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Run Google sync batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
