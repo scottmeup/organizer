@@ -2,34 +2,50 @@ import { resolveConflict } from '../conflict/resolve.js';
 import { hashCalendarCanonical, hashCalendarNative } from '../util/hash.js';
 import { buildEventInputFromRemote } from './event-input.js';
 import * as mappingRepo from '../../db/repositories/sync-mappings.js';
-import { getCalendarEventRow, insertCalendarEventRow, listCalendarEventRows, updateCalendarEventRow } from '../../db/repositories/calendar-events.js';
+import {
+  deleteCalendarEventRow,
+  getCalendarEventRow,
+  insertCalendarEventRow,
+  listCalendarEventRows,
+  updateCalendarEventRow,
+} from '../../db/repositories/calendar-events.js';
 import {
   createGoogleCalendarEvent,
-  listGoogleCalendarEvents,
+  listAllGoogleCalendarEvents,
   updateGoogleCalendarEvent,
 } from '../../integrations/google-calendar-api.js';
 
 const PROVIDER_ID = 'google-calendar';
 const CANONICAL_TYPE = 'calendar_event';
 
-async function resolveCalendarIds(accessToken, connection) {
+export async function resolveCalendarIds(_accessToken, connection) {
   if (connection.calendarIds?.length) return connection.calendarIds;
   return ['primary'];
 }
 
-async function fetchRemoteEvents(accessToken, calendarIds) {
-  const items = [];
-  for (const calendarId of calendarIds) {
-    const result = await listGoogleCalendarEvents(accessToken, calendarId);
-    for (const event of result.items || []) {
-      if (event.status === 'cancelled') continue;
-      items.push({ ...event, _calendarId: calendarId });
-    }
+export function buildCalendarWebhookUrl() {
+  if (process.env.GOOGLE_CALENDAR_WEBHOOK_URL) {
+    return process.env.GOOGLE_CALENDAR_WEBHOOK_URL;
   }
-  return items;
+  const domain = process.env.ORGSYS_DOMAIN;
+  if (!domain) return null;
+  const protocol = process.env.GOOGLE_CALENDAR_WEBHOOK_PROTOCOL || 'https';
+  return `${protocol}://${domain}/api/webhooks/google/calendar`;
 }
 
 async function reconcileRemoteEvent({ remote, adapter, stats }) {
+  if (remote.status === 'cancelled') {
+    const mapping = await mappingRepo.findMappingByRemote(PROVIDER_ID, CANONICAL_TYPE, remote.id);
+    if (!mapping) {
+      stats.skipped += 1;
+      return;
+    }
+    await deleteCalendarEventRow(mapping.canonical_id);
+    await mappingRepo.deleteSyncMappingByRemote(PROVIDER_ID, CANONICAL_TYPE, remote.id);
+    stats.pulled += 1;
+    return;
+  }
+
   const mapping = await mappingRepo.findMappingByRemote(PROVIDER_ID, CANONICAL_TYPE, remote.id);
   const nativeHash = hashCalendarNative(remote);
   const input = buildEventInputFromRemote(adapter, remote);
@@ -146,7 +162,52 @@ async function pushCanonicalEvent({ canonical, accessToken, adapter, stats, defa
   stats.pushed += 1;
 }
 
-export async function syncGoogleCalendar({ accessToken, connection, adapter }) {
+async function pullCalendarEventPage({ accessToken, calendarId, adapter, syncToken, stats, calendarIdByRemote }) {
+  try {
+    const { items, nextSyncToken } = await listAllGoogleCalendarEvents(accessToken, calendarId, { syncToken });
+    for (const remote of items) {
+      if (remote.status !== 'cancelled') {
+        calendarIdByRemote.set(remote.id, calendarId);
+      }
+      try {
+        await reconcileRemoteEvent({ remote: { ...remote, _calendarId: calendarId }, adapter, stats });
+      } catch (error) {
+        stats.errors.push({ remoteId: remote.id, error: error.message || String(error) });
+      }
+    }
+    return { nextSyncToken, reset: false };
+  } catch (error) {
+    if (error.code !== 'SYNC_TOKEN_EXPIRED') throw error;
+    const { items, nextSyncToken } = await listAllGoogleCalendarEvents(accessToken, calendarId, { syncToken: null });
+    for (const remote of items) {
+      if (remote.status !== 'cancelled') {
+        calendarIdByRemote.set(remote.id, calendarId);
+      }
+      try {
+        await reconcileRemoteEvent({ remote: { ...remote, _calendarId: calendarId }, adapter, stats });
+      } catch (innerError) {
+        stats.errors.push({ remoteId: remote.id, error: innerError.message || String(innerError) });
+      }
+    }
+    return { nextSyncToken, reset: true };
+  }
+}
+
+export async function pullGoogleCalendarChanges({ accessToken, calendarId, adapter, syncToken = null }) {
+  const stats = { pulled: 0, pushed: 0, skipped: 0, errors: [] };
+  const calendarIdByRemote = new Map();
+  const result = await pullCalendarEventPage({
+    accessToken,
+    calendarId,
+    adapter,
+    syncToken,
+    stats,
+    calendarIdByRemote,
+  });
+  return { stats, nextSyncToken: result.nextSyncToken, reset: result.reset, calendarIdByRemote };
+}
+
+export async function syncGoogleCalendar({ accessToken, connection, adapter, direction = 'both' }) {
   const stats = { pulled: 0, pushed: 0, skipped: 0, errors: [] };
   const calendarIds = await resolveCalendarIds(accessToken, connection);
 
@@ -155,15 +216,26 @@ export async function syncGoogleCalendar({ accessToken, connection, adapter }) {
   }
 
   const defaultCalendarId = calendarIds[0];
-  const remoteEvents = await fetchRemoteEvents(accessToken, calendarIds);
-  const calendarIdByRemote = new Map(remoteEvents.map((event) => [event.id, event._calendarId]));
+  const calendarIdByRemote = new Map();
 
-  for (const remote of remoteEvents) {
-    try {
-      await reconcileRemoteEvent({ remote, adapter, stats });
-    } catch (error) {
-      stats.errors.push({ remoteId: remote.id, error: error.message || String(error) });
+  if (direction !== 'push') {
+    for (const calendarId of calendarIds) {
+      try {
+        const result = await pullGoogleCalendarChanges({ accessToken, calendarId, adapter, syncToken: null });
+        stats.pulled += result.stats.pulled;
+        stats.skipped += result.stats.skipped;
+        stats.errors.push(...result.stats.errors);
+        for (const [remoteId, mappedCalendarId] of result.calendarIdByRemote.entries()) {
+          calendarIdByRemote.set(remoteId, mappedCalendarId);
+        }
+      } catch (error) {
+        stats.errors.push({ calendarId, error: error.message || String(error) });
+      }
     }
+  }
+
+  if (direction === 'pull') {
+    return stats;
   }
 
   const canonicalEvents = await listCalendarEventRows();

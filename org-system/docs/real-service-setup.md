@@ -46,5 +46,31 @@ curl -X POST http://localhost:8080/api/sync/run/google-calendar -H "Content-Type
 curl -X POST http://localhost:8080/api/sync/run/google/all -H "Content-Type: application/json" -d '{"mode":"poll"}'
 ```
 
+### Google Calendar push notifications
+
+Google Calendar supports push via `events.watch`. Google Tasks does **not** expose an equivalent push API, so Tasks continues to use polling.
+
+Requirements:
+
+1. A public **HTTPS** URL reachable by Google, routed to org-core:
+   - default: `https://<ORGSYS_DOMAIN>/api/webhooks/google/calendar`
+   - or set `GOOGLE_CALENDAR_WEBHOOK_URL` explicitly
+2. Set `GOOGLE_CALENDAR_WEBHOOK_TOKEN` to a shared secret (sent back by Google as `X-Goog-Channel-Token`)
+3. Register watches after credentials are configured:
+
+```bash
+curl -X POST http://localhost:8080/api/sync/watch/google-calendar/register \
+  -H "Content-Type: application/json" -d '{}'
+```
+
+4. Renew watches before they expire (max ~7 days). Use the n8n workflow `google_calendar_watch_renew_tick.json` or:
+
+```bash
+curl -X POST http://localhost:8080/api/sync/watch/google-calendar/renew \
+  -H "Content-Type: application/json" -d '{"withinMs":86400000}'
+```
+
+When Google notifies org-core, the handler responds immediately and runs an incremental calendar pull using the stored sync token.
+
 7. Test barcode intake.
 8. Test e-ink preview.

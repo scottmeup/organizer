@@ -1,0 +1,55 @@
+{
+  "name": "google_calendar_watch_renew_tick",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 12
+            }
+          ]
+        }
+      },
+      "id": "Schedule",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://org-core:8080/api/sync/watch/google-calendar/renew",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"withinMs\":86400000}"
+      },
+      "id": "Renew",
+      "name": "Renew calendar watch channels",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        520,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Renew calendar watch channels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -22,7 +22,7 @@ Consolidated status for the `org-system` tree after merging iteration bundles.
 
 - **Recurrence engine** — basic frequency only; missing after-completion, weekday/bysetpos rules, end conditions from spec §6–7
 - **Reminder engine** — projection stub only; no scheduled execution or re-remind loop
-- **Provider sync** — Google Tasks and Google Calendar bidirectional poll sync complete; Bring and Keep not yet connected
+- **Provider sync** — Google Calendar supports poll + push (`events.watch`); Google Tasks remains poll-only (no Google push API)
 - **Reports** — CRUD and sample payload; no timed delivery, presence gating, or voice output
 - **Display profiles** — hardcoded default payload; DB table exists but not fully used
 - **Shopping items** — CRUD without audit/undo or cross-service sync

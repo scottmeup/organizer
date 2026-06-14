@@ -47,6 +47,8 @@ Direct ports (local dev):
 - CRUD for tasks, calendar events, shopping items, reports, recurrence/reminder rules
 - `GET /api/audit/events`, `GET /api/undo/entries`, `POST /api/undo/:id/apply`
 - `GET /api/sync/mappings`, `POST /api/sync/run/:providerId`, `POST /api/sync/run/google/all`
+- `POST /api/sync/watch/google-calendar/register`, `POST /api/sync/watch/google-calendar/renew`, `GET /api/sync/watch/google-calendar`
+- `POST /api/webhooks/google/calendar` (Google Calendar push notifications)
 - `GET /api/display/profiles/default`
 - `POST /api/barcode/intake`
 
@@ -69,6 +71,7 @@ Bundled under `n8n/workflows/`:
 - daily report trigger
 - Google Tasks sync tick
 - Google Calendar sync tick
+- Google Calendar watch renew tick
 - Google sync all tick (Tasks + Calendar)
 
 Import or mount these into your n8n instance and configure credentials.
@@ -77,7 +80,7 @@ Import or mount these into your n8n instance and configure credentials.
 
 See `docs/bundle-status.md` for an honest gap list relative to the full design spec.
 
-**Working now:** Docker stack, PostgreSQL migrations, canonical CRUD, metadata parse/validate, scheduler preview, audit trail, compensating undo for tasks/calendar, display payload API, e-ink PC preview, config-ui proxy, adapter registry, **Google Tasks/Calendar bidirectional poll sync**, Google/HA integration clients.
+**Working now:** Docker stack, PostgreSQL migrations, canonical CRUD, metadata parse/validate, scheduler preview, audit trail, compensating undo for tasks/calendar, display payload API, e-ink PC preview, config-ui proxy, adapter registry, Google Tasks poll sync, Google Calendar poll + push webhook sync, Google/HA integration clients.
 
 **Still to build:** advanced recurrence (after-completion, byday, end conditions), reminder execution engine, report delivery to voice devices, presence adapter, web-mode config UI, linked-items API, Bring/Keep sync, hardware e-ink path.
 

@@ -42,7 +42,13 @@ export async function upsertSyncMappingRow(input) {
   return insertSyncMappingRow(input);
 }
 
-/** @deprecated use upsertSyncMappingRow */
-export async function upsertRow(input) {
-  return upsertSyncMappingRow(input);
+export async function deleteSyncMappingRow(id) {
+  return (await getPool().query('delete from sync_mappings where id = $1', [id])).rowCount > 0;
+}
+
+export async function deleteSyncMappingByRemote(providerId, canonicalType, remoteId) {
+  return (await getPool().query(
+    'delete from sync_mappings where provider_id = $1 and canonical_type = $2 and remote_id = $3',
+    [providerId, canonicalType, remoteId]
+  )).rowCount > 0;
 }

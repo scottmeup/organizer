@@ -18,6 +18,12 @@ import { getServiceRegistry } from '../api/services/index.js';
 import { getDisplayPayload } from '../api/display/index.js';
 import { getConfigState } from '../api/config/index.js';
 import { runProviderSync, runGoogleSyncBatch } from '../api/provider-sync/index.js';
+import {
+  listGoogleCalendarWatchSubscriptions,
+  registerGoogleCalendarWatchSubscriptions,
+  renewGoogleCalendarWatchSubscriptions,
+} from '../api/sync/watch/index.js';
+import { handleGoogleCalendarWebhook } from '../api/webhooks/google-calendar/index.js';
 
 export const router = Router();
 
@@ -131,4 +137,11 @@ router.get('/api/sync/mappings', async (_req, res) => res.json(await listSyncMap
 router.post('/api/barcode/intake', async (req, res) => res.status(201).json(await barcodeIntake(req.body || {}, req.headers)));
 router.post('/api/sync/run/:providerId', async (req, res) => res.json(await runProviderSync(req.params.providerId, req.body || {})));
 router.post('/api/sync/run/google/all', async (req, res) => res.json(await runGoogleSyncBatch(req.body || {})));
+router.post('/api/sync/watch/google-calendar/register', async (req, res) => res.json(await registerGoogleCalendarWatchSubscriptions(req.body || {})));
+router.post('/api/sync/watch/google-calendar/renew', async (req, res) => res.json(await renewGoogleCalendarWatchSubscriptions(req.body || {})));
+router.get('/api/sync/watch/google-calendar', async (_req, res) => res.json(await listGoogleCalendarWatchSubscriptions()));
+router.post('/api/webhooks/google/calendar', async (req, res) => {
+  const result = await handleGoogleCalendarWebhook(req);
+  res.status(200).json(result);
+});
 router.get('/api/display/profiles/default', async (_req, res) => res.json(await getDisplayPayload()));
