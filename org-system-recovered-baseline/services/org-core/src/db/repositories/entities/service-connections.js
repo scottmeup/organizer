@@ -1,0 +1,5 @@
+import { getPool } from '../client.js';
+export async function listRows() { return (await getPool().query('select * from service_connections order by created_at desc')).rows; }
+export async function getRow(id) { return (await getPool().query('select * from service_connections where id = $1', [id])).rows[0] || null; }
+export async function insertRow(input) { return (await getPool().query('insert into service_connections(provider_id,provider_type,enabled,config) values ($1,$2,$3,$4) returning *', [input.providerId, input.providerType, input.enabled ?? False, JSON.stringify(input.config || {})])).rows[0]; }
+export async function updateRow(id, input) { const existing = await getRow(id); if (!existing) return null; const config = input.config || (typeof existing.config === 'string' ? JSON.parse(existing.config || '{}') : existing.config); return (await getPool().query('update service_connections set provider_id=$2,provider_type=$3,enabled=$4,config=$5,updated_at=now() where id=$1 returning *', [id, input.providerId || existing.provider_id, input.providerType || existing.provider_type, input.enabled ?? existing.enabled, JSON.stringify(config)])).rows[0]; }

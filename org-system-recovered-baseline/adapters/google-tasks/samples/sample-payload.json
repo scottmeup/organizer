@@ -1,0 +1,8 @@
+{
+  "provider": "google-tasks",
+  "sample": true,
+  "payload": {
+    "title": "google-tasks sample",
+    "status": "open"
+  }
+}

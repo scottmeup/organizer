@@ -1,0 +1,8 @@
+{
+  "provider": "google-calendar",
+  "sample": true,
+  "payload": {
+    "title": "google-calendar sample",
+    "status": "open"
+  }
+}

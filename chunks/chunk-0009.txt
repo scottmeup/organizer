@@ -1,0 +1,260 @@
+----- BEGIN FILE -----
+artifact: org-system-deep-prototype.zip
+path: services/org-core/src/app/routes.js
+size: 7714
+sha256: 1ae18f0decf796ae5cc92e1de5f016af5ad5e6bf6e7b6082d4ff74ca689e5259
+----- CONTENT START -----
+import { Router } from 'express';
+import { parseMetadataBlock, serializeMetadataBlock } from '../metadata/parser.js';
+import { validateMetadata } from '../metadata/validator.js';
+import { projectRecurrence } from '../scheduler/recurrence/index.js';
+import { buildReminderProjection } from '../scheduler/reminders/index.js';
+import { listTasks, createTask, getTask, updateTask, deleteTask } from '../api/tasks/index.js';
+import { listCalendarEvents, createCalendarEvent, getCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from '../api/calendar/index.js';
+import { listReports, createReport, getReport, updateReport, deleteReport } from '../api/reports/index.js';
+import { listShoppingItems, createShoppingItem, getShoppingItem, updateShoppingItem, deleteShoppingItem } from '../api/shopping/index.js';
+import { listRecurrenceRules, createRecurrenceRule, getRecurrenceRule, updateRecurrenceRule, deleteRecurrenceRule } from '../api/recurrence-rules/index.js';
+import { listReminderRules, createReminderRule, getReminderRule, updateReminderRule, deleteReminderRule } from '../api/reminder-rules/index.js';
+import { listServiceConnections, createServiceConnection, updateServiceConnection } from '../api/service-connections/index.js';
+import { listAuditEvents } from '../api/audit/index.js';
+import { listUndoEntries, applyUndoEntry } from '../api/undo/index.js';
+import { listSyncMappings } from '../api/sync/index.js';
+import { barcodeIntake } from '../api/barcode/index.js';
+import { getServiceRegistry } from '../api/services/index.js';
+import { getDisplayPayload } from '../api/display/index.js';
+import { getConfigState } from '../api/config/index.js';
+import { runProviderSync } from '../api/provider-sync/index.js';
+
+export const router = Router();
+
+function notFound(res, item='not_found') {
+  res.status(404).json({ error: item });
+}
+
+router.get('/api/config', async (_req, res) => res.json(await getConfigState()));
+router.get('/api/services', (_req, res) => res.json(getServiceRegistry()));
+router.get('/api/services/connections', async (_req, res) => res.json(await listServiceConnections()));
+router.post('/api/services/connections', async (req, res) => res.status(201).json(await createServiceConnection(req.body || {})));
+router.put('/api/services/connections/:id', async (req, res) => {
+  const item = await updateServiceConnection(req.params.id, req.body || {});
+  if (!item) return notFound(res);
+  res.json(item);
+});
+
+router.post('/api/metadata/parse', (req, res) => res.json(parseMetadataBlock(String(req.body?.text || ''))));
+router.post('/api/metadata/validate', (req, res) => res.json(validateMetadata(req.body || {})));
+router.post('/api/metadata/serialize', (req, res) => res.json({ text: serializeMetadataBlock(req.body || {}) }));
+router.post('/api/scheduler/preview', (req, res) => res.json({ recurrence: projectRecurrence(req.body || {}), reminders: buildReminderProjection(req.body || {}) }));
+
+router.get('/api/tasks', async (_req, res) => res.json(await listTasks()));
+router.post('/api/tasks', async (req, res) => res.status(201).json(await createTask(req.body || {})));
+router.get('/api/tasks/:id', async (req, res) => {
+  const item = await getTask(req.params.id);
+  if (!item) return notFound(res);
+  res.json(item);
+});
+router.put('/api/tasks/:id', async (req, res) => {
+  const item = await updateTask(req.params.id, req.body || {});
+  if (!item) return notFound(res);
+  res.json(item);
+});
+router.delete('/api/tasks/:id', async (req, res) => res.json({ ok: await deleteTask(req.params.id) }));
+
+router.get('/api/calendar/events', async (_req, res) => res.json(await listCalendarEvents()));
+router.post('/api/calendar/events', async (req, res) => res.status(201).json(await createCalendarEvent(req.body || {})));
+router.get('/api/calendar/events/:id', async (req, res) => {
+  const item = await getCalendarEvent(req.params.id);
+  if (!item) return notFound(res);
+  res.json(item);
+});
+router.put('/api/calendar/events/:id', async (req, res) => {
+  const item = await updateCalendarEvent(req.params.id, req.body || {});
+  if (!item) return notFound(res);
+  res.json(item);
+});
+router.delete('/api/calendar/events/:id', async (req, res) => res.json({ ok: await deleteCalendarEvent(req.params.id) }));
+
+router.get('/api/shopping/items', async (_req, res) => res.json(await listShoppingItems()));
+router.post('/api/shopping/items', async (req, res) => res.status(201).json(await createShoppingItem(req.body || {})));
+router.get('/api/shopping/items/:id', async (req, res) => {
+  const item = await getShoppingItem(req.params.id);
+  if (!item) return notFound(res);
+  res.json(item);
+});
+router.put('/api/shopping/items/:id', async (req, res) => {
+  const item = await updateShoppingItem(req.params.id, req.body || {});
+  if (!item) return notFound(res);
+  res.json(item);
+});
+router.delete('/api/shopping/items/:id', async (req, res) => res.json({ ok: await deleteShoppingItem(req.params.id) }));
+
+router.get('/api/reports', async (_req, res) => res.json(await listReports()));
+router.post('/api/reports', async (req, res) => res.status(201).json(await createReport(req.body || {})));
+router.get('/api/reports/:id', async (req, res) => {
+  const item = await getReport(req.params.id);
+  if (!item) return notFound(res);
+  res.json(item);
+});
+router.put('/api/reports/:id', async (req, res) => {
+  const item = await updateReport(req.params.id, req.body || {});
+  if (!item) return notFound(res);
+  res.json(item);
+});
+router.delete('/api/reports/:id', async (req, res) => res.json({ ok: await deleteReport(req.params.id) }));
+
+router.get('/api/recurrence-rules', async (_req, res) => res.json(await listRecurrenceRules()));
+router.post('/api/recurrence-rules', async (req, res) => res.status(201).json(await createRecurrenceRule(req.body || {})));
+router.get('/api/recurrence-rules/:id', async (req, res) => {
+  const item = await getRecurrenceRule(req.params.id);
+  if (!item) return notFound(res);
+  res.json(item);
+});
+router.put('/api/recurrence-rules/:id', async (req, res) => {
+  const item = await updateRecurrenceRule(req.params.id, req.body || {});
+  if (!item) return notFound(res);
+  res.json(item);
+});
+router.delete('/api/recurrence-rules/:id', async (req, res) => res.json({ ok: await deleteRecurrenceRule(req.params.id) }));
+
+router.get('/api/reminder-rules', async (_req, res) => res.json(await listReminderRules()));
+router.post('/api/reminder-rules', async (req, res) => res.status(201).json(await createReminderRule(req.body || {})));
+router.get('/api/reminder-rules/:id', async (req, res) => {
+  const item = await getReminderRule(req.params.id);
+  if (!item) return notFound(res);
+  res.json(item);
+});
+router.put('/api/reminder-rules/:id', async (req, res) => {
+  const item = await updateReminderRule(req.params.id, req.body || {});
+  if (!item) return notFound(res);
+  res.json(item);
+});
+router.delete('/api/reminder-rules/:id', async (req, res) => res.json({ ok: await deleteReminderRule(req.params.id) }));
+
+router.get('/api/audit/events', async (_req, res) => res.json(await listAuditEvents()));
+router.get('/api/undo/entries', async (_req, res) => res.json(await listUndoEntries()));
+router.post('/api/undo/:id/apply', async (req, res) => res.json(await applyUndoEntry(req.params.id)));
+router.get('/api/sync/mappings', async (_req, res) => res.json(await listSyncMappings()));
+router.post('/api/barcode/intake', async (req, res) => res.status(201).json(await barcodeIntake(req.body || {}, req.headers)));
+router.post('/api/sync/run/:providerId', async (req, res) => res.json(await runProviderSync(req.params.providerId, req.body || {})));
+router.get('/api/display/profiles/default', async (_req, res) => res.json(await getDisplayPayload()));
+
+----- CONTENT END -----
+----- END FILE -----
+
+----- BEGIN FILE -----
+artifact: org-system-deep-prototype.zip
+path: services/org-core/src/app/server.js
+size: 583
+sha256: ae1a8781b47f0b3809b72d476518b7747b792c048d666ebf5766f27f877dfd7e
+----- CONTENT START -----
+import express from 'express';
+import { router } from './routes.js';
+import { ensureDatabase } from '../db/bootstrap.js';
+
+const app = express();
+const port = Number(process.env.PORT || 8080);
+
+app.use(express.json({ limit: '1mb' }));
+app.use(router);
+
+app.get('/health', async (_req, res) => {
+  const databaseReady = await ensureDatabase();
+  res.json({ ok: true, service: 'org-core', configSource: process.env.CONFIG_SOURCE || 'env', databaseReady });
+});
+
+app.listen(port, async () => {
+  await ensureDatabase();
+  console.log(JSON.stringify({ service: 'org-core', port }));
+});
+
+----- CONTENT END -----
+----- END FILE -----
+
+----- BEGIN FILE -----
+artifact: org-system-deep-prototype.zip
+path: services/org-core/src/db/bootstrap.js
+size: 334
+sha256: daa876ebd02914c9aeeaf1b02492540009716f7957463d91bb9fded4a5198c47
+----- CONTENT START -----
+import { getPool } from './client.js';
+import { runMigrations } from './migrate.js';
+let ready = false;
+export async function ensureDatabase() {
+  if (ready) return true;
+  if (!process.env.DATABASE_URL) return false;
+  const pool = getPool();
+  await pool.query('select 1');
+  await runMigrations();
+  ready = true;
+  return true;
+}
+
+----- CONTENT END -----
+----- END FILE -----
+
+----- BEGIN FILE -----
+artifact: org-system-deep-prototype.zip
+path: services/org-core/src/db/client.js
+size: 175
+sha256: 4bea1e0f11f522f51751548e918fa7d5d5393bdafdfedca4a6bd569ad50de067
+----- CONTENT START -----
+import pg from 'pg';
+const { Pool } = pg;
+let pool;
+export function getPool() {
+  if (!pool) pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  return pool;
+}
+
+----- CONTENT END -----
+----- END FILE -----
+
+----- BEGIN FILE -----
+artifact: org-system-deep-prototype.zip
+path: services/org-core/src/db/migrate.js
+size: 1120
+sha256: 0e712adb8884ac8172fd9e4a34e7c3bccbfcd2013c4dc40eaa9b52f0f696d913
+----- CONTENT START -----
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { getPool } from './client.js';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const migrationsDir = path.resolve(__dirname, '../../migrations');
+export async function runMigrations() {
+  const pool = getPool();
+  await pool.query('create table if not exists schema_migrations (version text primary key, applied_at timestamptz not null default now())');
+  const files = (await fs.readdir(migrationsDir)).filter((n) => n.endsWith('.sql')).sort();
+  for (const file of files) {
+    const found = await pool.query('select version from schema_migrations where version = $1', [file]);
+    if (found.rowCount > 0) continue;
+    const sql = await fs.readFile(path.join(migrationsDir, file), 'utf-8');
+    await pool.query('begin');
+    try {
+      await pool.query(sql);
+      await pool.query('insert into schema_migrations(version) values ($1)', [file]);
+      await pool.query('commit');
+    } catch (error) {
+      await pool.query('rollback');
+      throw error;
+    }
+  }
+}
+
+----- CONTENT END -----
+----- END FILE -----
+
+----- BEGIN FILE -----
+artifact: org-system-deep-prototype.zip
+path: services/org-core/src/db/repositories/audit-events.js
+size: 383
+sha256: ce7e20076306bd770f38cea6c92a93f3aa016e4d793d09769a37ad343117a75b
+----- CONTENT START -----
+import { getPool } from '../client.js';
+export async function listRows() { return (await getPool().query('select * from audit_events order by created_at desc')).rows; }
+export async function insertRow(input) { return (await getPool().query('insert into audit_events(event_type,payload) values ($1,$2) returning *', [input.eventType, JSON.stringify(input.payload || {})])).rows[0]; }
+
+----- CONTENT END -----
+----- END FILE -----
+

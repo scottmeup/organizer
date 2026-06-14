@@ -1,0 +1,6 @@
+import { getPool } from '../client.js';
+export async function listRecurrenceRuleRows() { return (await getPool().query('select * from recurrence_rules order by created_at desc')).rows; }
+export async function getRecurrenceRuleRow(id) { return (await getPool().query('select * from recurrence_rules where id = $1', [id])).rows[0] || null; }
+export async function insertRecurrenceRuleRow(input) { return (await getPool().query('insert into recurrence_rules(owner_type, owner_id, config) values ($1,$2,$3) returning *', [input.ownerType || 'task', input.ownerId || 'unknown', JSON.stringify(input.config || {})])).rows[0]; }
+export async function updateRecurrenceRuleRow(id, input) { const existing = await getRecurrenceRuleRow(id); if (!existing) return null; const config = input.config || (typeof existing.config === 'string' ? JSON.parse(existing.config || '{}') : existing.config); return (await getPool().query('update recurrence_rules set owner_type=$2, owner_id=$3, config=$4, updated_at=now() where id=$1 returning *', [id, input.ownerType || existing.owner_type, input.ownerId || existing.owner_id, JSON.stringify(config)])).rows[0]; }
+export async function deleteRecurrenceRuleRow(id) { return (await getPool().query('delete from recurrence_rules where id = $1', [id])).rowCount > 0; }

@@ -1,0 +1,2 @@
+create table if not exists sync_mappings (id uuid primary key default gen_random_uuid(), canonical_type text not null, canonical_id text not null, provider_id text not null, remote_id text not null, metadata_hash text null, native_hash text null, last_source text null, created_at timestamptz not null default now(), updated_at timestamptz not null default now());
+create unique index if not exists sync_mappings_unique_idx on sync_mappings(canonical_type, canonical_id, provider_id, remote_id);

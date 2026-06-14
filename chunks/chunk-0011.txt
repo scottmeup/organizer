@@ -1,0 +1,142 @@
+----- BEGIN FILE -----
+artifact: org-system-deep-prototype.zip
+path: services/org-core/src/db/repositories/sync-mappings.js
+size: 1243
+sha256: e50f748df9ec0b98912a21fbe2105ce99037f2f11a6dd04286913bb41a8dc31e
+----- CONTENT START -----
+import { getPool } from '../client.js';
+export async function listRows() { return (await getPool().query('select * from sync_mappings order by created_at desc')).rows; }
+export async function getByPair(canonicalType, canonicalId, providerId) { return (await getPool().query('select * from sync_mappings where canonical_type=$1 and canonical_id=$2 and provider_id=$3 order by updated_at desc limit 1', [canonicalType, canonicalId, providerId])).rows[0] || null; }
+export async function upsertRow(input) { const found = await getByPair(input.canonicalType, input.canonicalId, input.providerId); if (found) { return (await getPool().query('update sync_mappings set remote_id=$2,metadata_hash=$3,native_hash=$4,last_source=$5,updated_at=now() where id=$1 returning *', [found.id, input.remoteId, input.metadataHash || null, input.nativeHash || null, input.lastSource || null])).rows[0]; } return (await getPool().query('insert into sync_mappings(canonical_type,canonical_id,provider_id,remote_id,metadata_hash,native_hash,last_source) values ($1,$2,$3,$4,$5,$6,$7) returning *', [input.canonicalType, input.canonicalId, input.providerId, input.remoteId, input.metadataHash || null, input.nativeHash || null, input.lastSource || null])).rows[0]; }
+
+----- CONTENT END -----
+----- END FILE -----
+
+----- BEGIN FILE -----
+artifact: org-system-deep-prototype.zip
+path: services/org-core/src/db/repositories/undo-entries.js
+size: 699
+sha256: 30d7436fb85f6c6ba7f2b325ba41191ed23214c5ba8527ef5e8849d3faf29a11
+----- CONTENT START -----
+import { getPool } from '../client.js';
+export async function listRows() { return (await getPool().query('select * from undo_entries order by created_at desc')).rows; }
+export async function getRow(id) { return (await getPool().query('select * from undo_entries where id = $1', [id])).rows[0] || null; }
+export async function insertRow(input) { return (await getPool().query('insert into undo_entries(audit_event_id,status) values ($1,$2) returning *', [input.auditEventId, input.status || 'pending'])).rows[0]; }
+export async function markApplied(id) { return (await getPool().query('update undo_entries set status=$2,applied_at=now() where id=$1 returning *', [id, 'applied'])).rows[0] || null; }
+
+----- CONTENT END -----
+----- END FILE -----
+
+----- BEGIN FILE -----
+artifact: org-system-deep-prototype.zip
+path: services/org-core/src/integrations/google-auth.js
+size: 883
+sha256: 90d46aac8e866cfb0d139bc1aca59ed2c86158eb148263922190f7c9d2ad2540
+----- CONTENT START -----
+export async function ensureGoogleAccessToken(connection) {
+  if (connection.accessToken && connection.expiresAt && new Date(connection.expiresAt).getTime() > Date.now() + 60000) {
+    return connection.accessToken;
+  }
+  if (!connection.refreshToken) {
+    return connection.accessToken || null;
+  }
+  const params = new URLSearchParams();
+  params.set('client_id', process.env.GOOGLE_CLIENT_ID || '');
+  params.set('client_secret', process.env.GOOGLE_CLIENT_SECRET || '');
+  params.set('grant_type', 'refresh_token');
+  params.set('refresh_token', connection.refreshToken);
+  const response = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+  if (!response.ok) {
+    return null;
+  }
+  const payload = await response.json();
+  return payload.access_token || null;
+}
+
+----- CONTENT END -----
+----- END FILE -----
+
+----- BEGIN FILE -----
+artifact: org-system-deep-prototype.zip
+path: services/org-core/src/integrations/google-calendar-api.js
+size: 1101
+sha256: 7c9d3dd6627821592d37e3287c94e72ab394bafb795136f32ca25aab4214ab12
+----- CONTENT START -----
+export async function listGoogleCalendars(accessToken) {
+  const response = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', { headers: { Authorization: `Bearer ${accessToken}` } });
+  if (!response.ok) throw new Error('google_calendar_list_failed');
+  return response.json();
+}
+export async function listGoogleCalendarEvents(accessToken, calendarId) {
+  const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`, { headers: { Authorization: `Bearer ${accessToken}` } });
+  if (!response.ok) throw new Error('google_calendar_events_failed');
+  return response.json();
+}
+export async function createGoogleCalendarEvent(accessToken, calendarId, body) {
+  const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`, { method: 'POST', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!response.ok) throw new Error('google_calendar_create_failed');
+  return response.json();
+}
+
+----- CONTENT END -----
+----- END FILE -----
+
+----- BEGIN FILE -----
+artifact: org-system-deep-prototype.zip
+path: services/org-core/src/integrations/google-tasks-api.js
+size: 1046
+sha256: 2c8d6e7162e35a9956969ba5379b7d5404e6b5383a1e749a3b06f2617f24a19c
+----- CONTENT START -----
+export async function listGoogleTaskLists(accessToken) {
+  const response = await fetch('https://tasks.googleapis.com/tasks/v1/users/@me/lists', { headers: { Authorization: `Bearer ${accessToken}` } });
+  if (!response.ok) throw new Error('google_tasklists_failed');
+  return response.json();
+}
+export async function listGoogleTasks(accessToken, tasklistId) {
+  const response = await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${encodeURIComponent(tasklistId)}/tasks`, { headers: { Authorization: `Bearer ${accessToken}` } });
+  if (!response.ok) throw new Error('google_tasks_failed');
+  return response.json();
+}
+export async function createGoogleTask(accessToken, tasklistId, body) {
+  const response = await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${encodeURIComponent(tasklistId)}/tasks`, { method: 'POST', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!response.ok) throw new Error('google_task_create_failed');
+  return response.json();
+}
+
+----- CONTENT END -----
+----- END FILE -----
+
+----- BEGIN FILE -----
+artifact: org-system-deep-prototype.zip
+path: services/org-core/src/integrations/home-assistant-api.js
+size: 751
+sha256: f448daad887267a9ba2ed6d0c325bd409d9caf7d28f867fddacea0615418fba4
+----- CONTENT START -----
+export async function homeAssistantGetStates() {
+  const response = await fetch(`${process.env.HOME_ASSISTANT_BASE_URL}/api/states`, { headers: { Authorization: `Bearer ${process.env.HOME_ASSISTANT_TOKEN}` } });
+  if (!response.ok) throw new Error('home_assistant_states_failed');
+  return response.json();
+}
+export async function homeAssistantCallService(domain, service, data) {
+  const response = await fetch(`${process.env.HOME_ASSISTANT_BASE_URL}/api/services/${domain}/${service}`, { method: 'POST', headers: { Authorization: `Bearer ${process.env.HOME_ASSISTANT_TOKEN}`, 'Content-Type': 'application/json' }, body: JSON.stringify(data || {}) });
+  if (!response.ok) throw new Error('home_assistant_service_failed');
+  return response.json();
+}
+
+----- CONTENT END -----
+----- END FILE -----
+
+----- BEGIN FILE -----
+artifact: org-system-deep-prototype.zip
+path: services/org-core/src/utils/map-row.js
+size: 134
+sha256: fc82655702eb6d1ef5ba9d24e42db7d36c2b423e2a8bc4e295526c27e42ed581
+----- CONTENT START -----
+export function parseJson(value) {
+  if (!value) return {};
+  return typeof value === 'string' ? JSON.parse(value || '{}') : value;
+}
+
+----- CONTENT END -----
+----- END FILE -----
+

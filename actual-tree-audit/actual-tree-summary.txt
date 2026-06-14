@@ -1,0 +1,410 @@
+org-system-scaffold.zip
+  exists: True
+  root: org-system-scaffold.zip
+    file_count: 168
+    has routes.js: True
+    has server.js: True
+    src entries: adapters, api, app, config, db, domain, logging, metadata, reports, scheduler, sync, utils
+  root: org-system-scaffold.zip\adapters\alexa-bring
+    file_count: 6
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-scaffold.zip\adapters\alexa-custom-skill
+    file_count: 6
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-scaffold.zip\adapters\alexa-experimental
+    file_count: 6
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-scaffold.zip\adapters\barcode-input
+    file_count: 6
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-scaffold.zip\adapters\bring
+    file_count: 6
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-scaffold.zip\adapters\display
+    file_count: 6
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-scaffold.zip\adapters\google-calendar
+    file_count: 6
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-scaffold.zip\adapters\google-keep
+    file_count: 6
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-scaffold.zip\adapters\google-tasks
+    file_count: 6
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-scaffold.zip\adapters\presence
+    file_count: 6
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-scaffold.zip\services\config-ui
+    file_count: 4
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-scaffold.zip\services\eink-client
+    file_count: 5
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-scaffold.zip\services\org-core
+    file_count: 39
+    has routes.js: False
+    has server.js: False
+    src entries: 
+
+org-system-stage2.zip
+  exists: True
+  root: org-system-stage2.zip
+    file_count: 79
+    has routes.js: True
+    has server.js: True
+    src entries: adapters, api, app, config, db, metadata, scheduler
+  root: org-system-stage2.zip\adapters\alexa-custom-skill
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage2.zip\adapters\alexa-experimental
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage2.zip\adapters\barcode-input
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage2.zip\adapters\bring
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage2.zip\adapters\display
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage2.zip\adapters\google-calendar
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage2.zip\adapters\google-keep
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage2.zip\adapters\google-tasks
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage2.zip\services\config-ui
+    file_count: 4
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage2.zip\services\eink-client
+    file_count: 4
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage2.zip\services\org-core
+    file_count: 43
+    has routes.js: False
+    has server.js: False
+    src entries: 
+
+org-system-stage3.zip
+  exists: True
+  root: org-system-stage3.zip
+    file_count: 95
+    has routes.js: True
+    has server.js: True
+    src entries: adapters, api, app, config, db, metadata, scheduler
+  root: org-system-stage3.zip\adapters\alexa-custom-skill
+    file_count: 3
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage3.zip\adapters\alexa-experimental
+    file_count: 3
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage3.zip\adapters\barcode-input
+    file_count: 3
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage3.zip\adapters\bring
+    file_count: 3
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage3.zip\adapters\display
+    file_count: 3
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage3.zip\adapters\google-calendar
+    file_count: 3
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage3.zip\adapters\google-keep
+    file_count: 3
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage3.zip\adapters\google-tasks
+    file_count: 3
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage3.zip\services\config-ui
+    file_count: 4
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage3.zip\services\eink-client
+    file_count: 4
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage3.zip\services\org-core
+    file_count: 43
+    has routes.js: False
+    has server.js: False
+    src entries: 
+
+org-system-stage4.zip
+  exists: True
+  root: org-system-stage4.zip
+    file_count: 102
+    has routes.js: False
+    has server.js: False
+    src entries: adapters, api, config, db, metadata, scheduler, sync
+  root: org-system-stage4.zip\adapters\alexa-custom-skill
+    file_count: 3
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage4.zip\adapters\alexa-experimental
+    file_count: 3
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage4.zip\adapters\barcode-input
+    file_count: 3
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage4.zip\adapters\bring
+    file_count: 4
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage4.zip\adapters\display
+    file_count: 3
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage4.zip\adapters\google-calendar
+    file_count: 4
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage4.zip\adapters\google-keep
+    file_count: 3
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage4.zip\adapters\google-tasks
+    file_count: 4
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-stage4.zip\services\org-core
+    file_count: 59
+    has routes.js: False
+    has server.js: False
+    src entries: 
+
+org-system-deep-prototype.zip
+  exists: True
+  root: org-system-deep-prototype.zip
+    file_count: 80
+    has routes.js: True
+    has server.js: True
+    src entries: api, app, db, integrations, utils
+  root: org-system-deep-prototype.zip\adapters\alexa-custom-skill
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-deep-prototype.zip\adapters\alexa-experimental
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-deep-prototype.zip\adapters\barcode-input
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-deep-prototype.zip\adapters\bring
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-deep-prototype.zip\adapters\display
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-deep-prototype.zip\adapters\google-calendar
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-deep-prototype.zip\adapters\google-keep
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-deep-prototype.zip\adapters\google-tasks
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-deep-prototype.zip\adapters\home-assistant
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-deep-prototype.zip\adapters\node-red
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-deep-prototype.zip\adapters\presence
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-deep-prototype.zip\services\org-core
+    file_count: 39
+    has routes.js: False
+    has server.js: False
+    src entries: 
+
+org-system-code-complete-prototype.zip
+  exists: True
+  root: org-system-code-complete-prototype.zip
+    file_count: 66
+    has routes.js: True
+    has server.js: True
+    src entries: adapters, app, metadata, scheduler
+  root: org-system-code-complete-prototype.zip\adapters\alexa-custom-skill
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-code-complete-prototype.zip\adapters\alexa-experimental
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-code-complete-prototype.zip\adapters\barcode-input
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-code-complete-prototype.zip\adapters\bring
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-code-complete-prototype.zip\adapters\display
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-code-complete-prototype.zip\adapters\google-calendar
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-code-complete-prototype.zip\adapters\google-keep
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-code-complete-prototype.zip\adapters\google-tasks
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-code-complete-prototype.zip\adapters\home-assistant
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-code-complete-prototype.zip\adapters\node-red
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-code-complete-prototype.zip\adapters\presence
+    file_count: 2
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-code-complete-prototype.zip\services\config-ui
+    file_count: 4
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-code-complete-prototype.zip\services\eink-client
+    file_count: 4
+    has routes.js: False
+    has server.js: False
+    src entries: 
+  root: org-system-code-complete-prototype.zip\services\org-core
+    file_count: 27
+    has routes.js: False
+    has server.js: False
+    src entries: 
+
+org-system-merged-bundle.zip
+  exists: True
+  root: org-system-merged-bundle.zip
+    file_count: 61
+    has routes.js: True
+    has server.js: True
+    src entries: api, app, db, integrations, utils
+  root: org-system-merged-bundle.zip\services\org-core
+    file_count: 46
+    has routes.js: False
+    has server.js: False
+    src entries: 

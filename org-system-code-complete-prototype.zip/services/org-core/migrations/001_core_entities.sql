@@ -1,0 +1,4 @@
+create extension if not exists pgcrypto;
+create table if not exists schema_migrations (version text primary key, applied_at timestamptz not null default now());
+create table if not exists tasks (id uuid primary key default gen_random_uuid(), title text not null, status text not null default 'open', due_date timestamptz null, description text not null default '', metadata_yaml text not null default '', metadata_json jsonb not null default '{}'::jsonb, created_at timestamptz not null default now(), updated_at timestamptz not null default now());
+create table if not exists calendar_events (id uuid primary key default gen_random_uuid(), title text not null, starts_at timestamptz null, ends_at timestamptz null, description text not null default '', metadata_yaml text not null default '', metadata_json jsonb not null default '{}'::jsonb, created_at timestamptz not null default now(), updated_at timestamptz not null default now());

@@ -1,0 +1,2 @@
+create table if not exists recurrence_rules (id uuid primary key default gen_random_uuid(), owner_type text not null, owner_id text not null, config jsonb not null default '{}'::jsonb, created_at timestamptz not null default now(), updated_at timestamptz not null default now());
+create table if not exists reminder_rules (id uuid primary key default gen_random_uuid(), owner_type text not null, owner_id text not null, config jsonb not null default '{}'::jsonb, created_at timestamptz not null default now(), updated_at timestamptz not null default now());
