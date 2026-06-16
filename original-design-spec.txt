@@ -1,4 +1,4 @@
-v1
+v1 - Copilot 365 prompt:
 
 Structure
 I’m using hierarchical item listing in this comment with the following layout:
